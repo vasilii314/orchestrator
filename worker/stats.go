@@ -78,7 +78,7 @@ func (s *Stats) CpuUsage() float64 {
 func GetMemoryStats() *linux.MemInfo {
 	memstats, err := linux.ReadMemInfo("/proc/meminfo")
 	if err != nil {
-		log.Println("Error reading from /proc/meminfo")
+		log.Println("[worker.Stats] [GetMemoryStats] Error reading from /proc/meminfo")
 		return &linux.MemInfo{}
 	}
 	return memstats
@@ -87,7 +87,7 @@ func GetMemoryStats() *linux.MemInfo {
 func GetDiskStats() *linux.Disk {
 	diskstats, err := linux.ReadDisk("/")
 	if err != nil {
-		log.Println("Error reading from /")
+		log.Println("[worker.Stats] [GetDiskStats] Error reading from /")
 		return &linux.Disk{}
 	}
 	return diskstats
@@ -96,7 +96,7 @@ func GetDiskStats() *linux.Disk {
 func GetCpuStats() *linux.CPUStat {
 	cpustats, err := linux.ReadStat("/proc/stat")
 	if err != nil {
-		log.Println("Error reading from /proc/stat")
+		log.Println("[worker.Stats] [GetCpuStats] Error reading from /proc/stat")
 		return &linux.CPUStat{}
 	}
 	return &cpustats.CPUStatAll
@@ -105,7 +105,7 @@ func GetCpuStats() *linux.CPUStat {
 func GetLoadStats() *linux.LoadAvg {
 	loadstats, err := linux.ReadLoadAvg("/proc/loadavg")
 	if err != nil {
-		log.Println("Error reading from /proc/loadavg")
+		log.Println("[worker.Stats] [GetLoadStats] Error reading from /proc/loadavg")
 		return &linux.LoadAvg{}
 	}
 	return loadstats

@@ -8,10 +8,8 @@ import (
 	"github.com/vasilii314/orchestrator/manager"
 	"github.com/vasilii314/orchestrator/task"
 	"github.com/vasilii314/orchestrator/worker"
-	"log"
 	"os"
 	"strconv"
-	"time"
 )
 
 func createContainer() (*task.Docker, *task.DockerResult) {
@@ -50,77 +48,68 @@ func stopContainer(d *task.Docker, id string) *task.DockerResult {
 	return &result
 }
 
-func runTasks(w *worker.Worker) {
-	for {
-		if w.Queue.Len() != 0 {
-			result := w.RunTask()
-			if result.Error != nil {
-				log.Printf("Error running task: %v\n", result.Error)
-			}
-		} else {
-			log.Println("No tasks to process currently.")
-		}
-		log.Println("Sleeping for 10 seconds.")
-		time.Sleep(10 * time.Second)
-	}
-}
-
 func main() {
-	host := os.Getenv("CUBE_HOST")
-	if len(host) == 0 {
-		host = "localhost"
+	workerHost := os.Getenv("O_WORKER_HOST")
+	if len(workerHost) == 0 {
+		workerHost = "localhost"
 	}
-	port, err := strconv.Atoi(os.Getenv("CUBE_PORT"))
+	workerPort, err := strconv.Atoi(os.Getenv("O_WORKER_PORT"))
 	if err != nil {
-		port = 5555
+		workerPort = 5555
 	}
-	fmt.Println("Starting cube worker")
+	managerHost := os.Getenv("O_MANAGER_HOST")
+	if len(workerHost) == 0 {
+		workerHost = "localhost"
+	}
+	managerPort, err := strconv.Atoi(os.Getenv("O_MANAGER_PORT"))
+	if err != nil {
+		workerPort = 5556
+	}
+	fmt.Println("[] [main] Starting orchestration worker")
 	w := worker.Worker{
 		Queue: *queue.New(),
 		Db:    make(map[uuid.UUID]*task.Task),
 	}
-	api := worker.Api{Address: host, Port: port, Worker: &w}
-	workers := []string{fmt.Sprintf("%s:%d", host, port)}
-	m := manager.New(workers)
-	for i := 0; i < 3; i++ {
-		t := task.Task{
-			ID:    uuid.New(),
-			Name:  fmt.Sprintf("test-container-%d", i),
-			State: task.Scheduled,
-			Image: "strm/helloworld-http",
-		}
-		te := task.TaskEvent{
-			ID:    uuid.New(),
-			State: task.Running,
-			Task:  t,
-		}
-		m.AddTask(te)
-	}
-	go func() {
-		for {
-			fmt.Println("Trying to send task to worker")
-			m.SendWork()
-			time.Sleep(15 * time.Second)
-		}
-	}()
-	go func() {
-		for {
-			fmt.Printf("[Manager] Updating task from %d workers\n", len(m.Workers))
-			m.UpdateTasks()
-			time.Sleep(15 * time.Second)
-		}
-	}()
-	go func() {
-		for {
-			for _, t := range m.TaskDb {
-				fmt.Printf("[Manager] Task: id: %s, state: %d\n", t.ID, t.State)
-				time.Sleep(15 * time.Second)
-			}
-		}
-	}()
-	go runTasks(&w)
+	wapi := worker.Api{Address: workerHost, Port: workerPort, Worker: &w}
+	go w.RunTasks()
 	go w.CollectStats()
-	api.Start()
+	go w.UpdateTasks()
+	go wapi.Start()
+	fmt.Println("[] [main] Starting orchestration manager")
+	workers := []string{fmt.Sprintf("%s:%d", workerHost, workerPort)}
+	m := manager.New(workers)
+	mapi := manager.Api{Address: managerHost, Port: managerPort, Manager: m}
+	go m.ProcessTasks()
+	go m.UpdateTasks()
+	go m.DoHealthChecks()
+	mapi.Start()
+	//for i := 0; i < 3; i++ {
+	//	t := task.Task{
+	//		ID:    uuid.New(),
+	//		Name:  fmt.Sprintf("test-container-%d", i),
+	//		State: task.Scheduled,
+	//		Image: "strm/helloworld-http",
+	//	}
+	//	te := task.TaskEvent{
+	//		ID:    uuid.New(),
+	//		State: task.Running,
+	//		Task:  t,
+	//	}
+	//	m.AddTask(te)
+	//}
+	//go m.ProcessTasks()
+	//go m.UpdateTasks()
+	//go func() {
+	//	for {
+	//		for _, t := range m.TaskDb {
+	//			fmt.Printf("[Manager] Task: id: %s, state: %d\n", t.ID, t.State)
+	//			time.Sleep(15 * time.Second)
+	//		}
+	//	}
+	//}()
+	//go w.RunTasks()
+	//go w.CollectStats()
+	//api.Start()
 
 	//t := task.Task{
 	//	ID:    uuid.New(),

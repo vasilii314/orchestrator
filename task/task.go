@@ -1,6 +1,7 @@
 package task
 
 import (
+	"github.com/docker/docker/api/types"
 	"time"
 
 	"github.com/docker/go-connections/nat"
@@ -37,10 +38,14 @@ type Task struct {
 	// available on the network
 	Cpu           float64
 	ExposedPorts  nat.PortSet
+	HostPorts     nat.PortMap
 	PortBindings  map[string]string
 	RestartPolicy string
 	StartTime     time.Time
 	FinishTime    time.Time
+	// Endpoint for task health checks (used by manager)
+	HealthCheck  string
+	RestartCount int
 }
 
 func NewConfig(t *Task) *Config {
@@ -49,4 +54,14 @@ func NewConfig(t *Task) *Config {
 		Image:         t.Image,
 		RestartPolicy: t.RestartPolicy,
 	}
+}
+
+// DockerInspectResponse is a wrapper struct to
+// work with responses from ContainerInspect.
+type DockerInspectResponse struct {
+	Error error
+	// Container stores data about a
+	// docker container, including
+	// its state (running, failed, etc.)
+	Container *types.ContainerJSON
 }

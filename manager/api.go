@@ -15,7 +15,7 @@ type Api struct {
 
 func (a *Api) initRouter() {
 	a.Router = chi.NewRouter()
-	a.Router.Route("/", func(r chi.Router) {
+	a.Router.Route("/tasks", func(r chi.Router) {
 		r.Post("/", a.StartTaskHandler)
 		r.Get("/", a.GetTasksHandler)
 		r.Route("/{taskID}", func(r chi.Router) {

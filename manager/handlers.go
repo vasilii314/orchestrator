@@ -52,8 +52,8 @@ func (a *Api) StopTasksHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tID, _ := uuid.Parse(taskID)
-	taskToStop, ok := a.Manager.TaskDb[tID]
-	if !ok {
+	taskToStop, err := a.Manager.TaskDb.Get(tID.String())
+	if err != nil {
 		log.Printf("[manager.Api] [StopTasksHandler] No task with ID %v found\n", tID)
 		w.WriteHeader(http.StatusNotFound)
 		return

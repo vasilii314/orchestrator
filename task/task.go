@@ -29,9 +29,9 @@ type Task struct {
 	// Image is the name of a Docker container image
 	Image string
 	// Allocated memory
-	Memory int
+	Memory int64
 	// Allocated disk space
-	Disk int
+	Disk int64
 	// These fields will be used by Docker
 	// to ensure the machine allocates the proper
 	// network ports for the task, and it is

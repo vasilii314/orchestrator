@@ -18,6 +18,10 @@ const (
 	Failed
 )
 
+func (s State) String() []string {
+	return []string{"Pending", "Scheduled", "Running", "Completed", "Failed"}
+}
+
 type Task struct {
 	// Unique identifier
 	ID          uuid.UUID

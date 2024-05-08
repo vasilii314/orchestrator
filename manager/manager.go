@@ -262,6 +262,9 @@ func New(workers []string, schedulerType scheduler.SchedulerType, storeType stor
 	case store.InMemoryStore:
 		ts = store.NewInMemoryTaskStore()
 		es = store.NewInMemoryTaskEventStore()
+	case store.PersistentStore:
+		ts, _ = store.NewPersistentTaskStore("tasks.db", 0600, "tasks")
+		es, _ = store.NewPersistentTaskEventStore("events.db", 0600, "events")
 	default:
 		ts = store.NewInMemoryTaskStore()
 		es = store.NewInMemoryTaskEventStore()

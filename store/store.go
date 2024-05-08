@@ -3,7 +3,8 @@ package store
 type StoreType string
 
 const (
-	InMemoryStore StoreType = "memory"
+	InMemoryStore   StoreType = "memory"
+	PersistentStore StoreType = "persistent"
 )
 
 type Store[K comparable, V any] interface {

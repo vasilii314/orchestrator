@@ -33,6 +33,9 @@ func New(name string, storeType store.StoreType) *Worker {
 	switch storeType {
 	case store.InMemoryStore:
 		s = store.NewInMemoryTaskStore()
+	case store.PersistentStore:
+		filename := fmt.Sprintf("%s_tasks.db", name)
+		s, _ = store.NewPersistentTaskStore(filename, 0600, "tasks")
 	default:
 		s = store.NewInMemoryTaskStore()
 	}

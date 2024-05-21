@@ -1,5 +1,5 @@
 ## Go Orchestrator
-### *Runs on Linux as its scheduler relies on ./proc filesystem.*
+### *Runs on Linux as its scheduler relies on /proc filesystem.*
 
 ## CLI
 
